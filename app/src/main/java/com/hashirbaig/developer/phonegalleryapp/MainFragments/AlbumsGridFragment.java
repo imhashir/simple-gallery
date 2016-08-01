@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.LruCache;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,29 +22,27 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.hashirbaig.developer.phonegalleryapp.Helper.PictureUtils;
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
 import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
 import com.hashirbaig.developer.phonegalleryapp.R;
+import com.hashirbaig.developer.phonegalleryapp.Threads.ThumbnailLoader;
 
-import java.io.File;
 import java.util.List;
 
-public class GalleryGridFragment extends Fragment{
+public class AlbumsGridFragment extends Fragment{
 
     private static final int NO_OF_COLS = 3;
     private static final int REQUEST_STORAGE_PERMISSION = 20;
 
     private RecyclerView mGridView;
     private AlbumAdapter mAdapter;
+    private LruCache<String, Bitmap> mCache = new LruCache<>(10 * 1024);
+    private ThumbnailLoader<AlbumHolder> mThumbnailLoader;
 
-    public static GalleryGridFragment newInstance() {
-        
-        Bundle args = new Bundle();
-        
-        GalleryGridFragment fragment = new GalleryGridFragment();
-        fragment.setArguments(args);
-        return fragment;
+    public static AlbumsGridFragment newInstance() {
+        return new AlbumsGridFragment();
     }
 
     @Override
@@ -89,7 +88,13 @@ public class GalleryGridFragment extends Fragment{
             mAlbum = album;
             mAlbumTitle.setText(album.getTitle());
             Photo photo = mAlbum.getPhotos().get(0);
-            Bitmap bitmap = BitmapFactory.decodeFile(photo.getPath());
+            Bitmap bitmap;
+            if (mCache.get(photo.getPath()) == null){
+                bitmap = PictureUtils.getScaledBitmap(photo.getPath(), mAlbumCover.getMaxWidth(), mAlbumCover.getMaxHeight());
+                mCache.put(photo.getPath(), bitmap);
+            } else {
+                bitmap = mCache.get(photo.getPath());
+            }
             mAlbumCover.setImageBitmap(bitmap);
         }
     }
