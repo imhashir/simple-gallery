@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -38,7 +39,6 @@ public class AlbumsGridFragment extends Fragment{
 
     private RecyclerView mGridView;
     private AlbumAdapter mAdapter;
-    private LruCache<String, Bitmap> mCache = new LruCache<>(10 * 1024);
     private ThumbnailLoader<AlbumHolder> mThumbnailLoader;
 
     public static AlbumsGridFragment newInstance() {
@@ -50,6 +50,25 @@ public class AlbumsGridFragment extends Fragment{
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         getLocalStoragePermissions();
+
+        Handler responseHandler = new Handler();
+        mThumbnailLoader = new ThumbnailLoader<>(responseHandler);
+
+        mThumbnailLoader.setThumbnailLoadedListener(new ThumbnailLoader.ThumbnailLoaderListener<AlbumHolder>() {
+            @Override
+            public void onThumbnailDownloaded(AlbumHolder target, Bitmap bitmap) {
+                target.finishView(bitmap);
+            }
+        });
+
+        mThumbnailLoader.start();
+        mThumbnailLoader.getLooper();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mThumbnailLoader.quit();
     }
 
     public void updateUI() {
@@ -84,17 +103,13 @@ public class AlbumsGridFragment extends Fragment{
             mAlbumTitle = (TextView) v.findViewById(R.id.album_name);
         }
 
-        public void bindAlbum(Album album) {
+        public void bindHolder(Album album) {
+            mThumbnailLoader.queueThumbnail(this, album.getPhotos().get(0).getPath());
             mAlbum = album;
-            mAlbumTitle.setText(album.getTitle());
-            Photo photo = mAlbum.getPhotos().get(0);
-            Bitmap bitmap;
-            if (mCache.get(photo.getPath()) == null){
-                bitmap = PictureUtils.getScaledBitmap(photo.getPath(), mAlbumCover.getMaxWidth(), mAlbumCover.getMaxHeight());
-                mCache.put(photo.getPath(), bitmap);
-            } else {
-                bitmap = mCache.get(photo.getPath());
-            }
+        }
+
+        public void finishView(Bitmap bitmap) {
+            mAlbumTitle.setText(mAlbum.getTitle());
             mAlbumCover.setImageBitmap(bitmap);
         }
     }
@@ -115,7 +130,7 @@ public class AlbumsGridFragment extends Fragment{
 
         @Override
         public void onBindViewHolder(AlbumHolder holder, int position) {
-            holder.bindAlbum(AlbumData.get(getActivity()).getAlbumList().get(position));
+            holder.bindHolder(AlbumData.get(getActivity()).getAlbumList().get(position));
         }
 
         @Override

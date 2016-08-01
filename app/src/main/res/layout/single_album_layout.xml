@@ -20,6 +20,7 @@
         android:textColor="@android:color/white"
         android:textStyle="bold"
         android:padding="3dp"
+        android:singleLine="true"
         android:background="@color/album_name_back"/>
 
 </FrameLayout>
