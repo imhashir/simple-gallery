@@ -4,6 +4,9 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
+import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
+
+import java.util.UUID;
 
 import static com.hashirbaig.developer.phonegalleryapp.Databases.GalleryDBSchema.*;
 
@@ -19,12 +22,26 @@ public class DBCursorWrapper extends CursorWrapper{
         String titleString = getString(getColumnIndex(AlbumTable.cols.TITLE));
         String pathString = getString(getColumnIndex(AlbumTable.cols.LOCATION));
         boolean hiddenBool = getString(getColumnIndex(AlbumTable.cols.HIDDEN)) == "1";
-        int itemsCount = getInt(getColumnIndex(AlbumTable.cols.ITEMS));
+        String uuidString = getString(getColumnIndex(AlbumTable.cols.UUID));
 
         album.setTitle(titleString);
         album.setPath(pathString);
         album.setHidden(hiddenBool);
+        album.setUUID(UUID.fromString(uuidString));
         return album;
+    }
+
+    public Photo getPhoto() {
+        Photo photo = new Photo();
+
+        String titleString = getString(getColumnIndex(PhotoData.cols.TITLE));
+        String pathString = getString(getColumnIndex(PhotoData.cols.LOCATION));
+        String uuidString = getString(getColumnIndex(PhotoData.cols.ALBUM_ID));
+
+        photo.setTitle(titleString);
+        photo.setPath(pathString);
+        photo.setAlbumId(UUID.fromString(uuidString));
+        return photo;
     }
 
 }

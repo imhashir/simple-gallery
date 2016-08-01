@@ -50,6 +50,7 @@ public class AlbumsGridFragment extends Fragment{
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         getLocalStoragePermissions();
+        AlbumData.get(getActivity());
 
         Handler responseHandler = new Handler();
         mThumbnailLoader = new ThumbnailLoader<>(responseHandler);

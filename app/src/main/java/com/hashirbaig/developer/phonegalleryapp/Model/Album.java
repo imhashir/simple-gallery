@@ -2,6 +2,7 @@ package com.hashirbaig.developer.phonegalleryapp.Model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Album {
 
@@ -9,14 +10,16 @@ public class Album {
     private String mPath;
     private List<Photo> mPhotos = new ArrayList<>();
     private boolean mHidden;
+    private UUID mUUID;
 
     public Album() {
-
+        mUUID = UUID.randomUUID();
     }
 
     public Album(String title) {
         mTitle = title;
         mHidden = mTitle.startsWith(".");
+        mUUID = UUID.randomUUID();
     }
 
     public String getTitle() {
@@ -53,5 +56,13 @@ public class Album {
 
     public void setHidden(boolean hidden) {
         mHidden = hidden;
+    }
+
+    public UUID getUUID() {
+        return mUUID;
+    }
+
+    public void setUUID(UUID UUID) {
+        mUUID = UUID;
     }
 }
