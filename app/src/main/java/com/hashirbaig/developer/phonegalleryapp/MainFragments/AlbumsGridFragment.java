@@ -1,6 +1,7 @@
 package com.hashirbaig.developer.phonegalleryapp.MainFragments;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.hashirbaig.developer.phonegalleryapp.Helper.PictureUtils;
+import com.hashirbaig.developer.phonegalleryapp.HostingActivities.ImagesGridActivity;
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
 import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
@@ -34,7 +36,6 @@ import java.util.List;
 
 public class AlbumsGridFragment extends Fragment{
 
-    private static final int NO_OF_COLS = 3;
     private static final int REQUEST_STORAGE_PERMISSION = 20;
 
     private RecyclerView mGridView;
@@ -86,13 +87,14 @@ public class AlbumsGridFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.gallery_grid_layout, container, false);
         mGridView = (RecyclerView) v.findViewById(R.id.grid_view);
-        mGridView.setLayoutManager(new GridLayoutManager(getActivity(), NO_OF_COLS));
+        mGridView.setLayoutManager(new GridLayoutManager(getActivity(), getResources().getInteger(R.integer.no_of_cols)));
         updateUI();
 
         return v;
     }
 
-    public class AlbumHolder extends RecyclerView.ViewHolder {
+    public class AlbumHolder extends RecyclerView.ViewHolder
+                                        implements View.OnClickListener{
 
         private ImageView mAlbumCover;
         private TextView mAlbumTitle;
@@ -102,6 +104,7 @@ public class AlbumsGridFragment extends Fragment{
             super(v);
             mAlbumCover = (ImageView) v.findViewById(R.id.album_thumb_container);
             mAlbumTitle = (TextView) v.findViewById(R.id.album_name);
+            v.setOnClickListener(this);
         }
 
         public void bindHolder(Album album) {
@@ -112,6 +115,12 @@ public class AlbumsGridFragment extends Fragment{
         public void finishView(Bitmap bitmap) {
             mAlbumTitle.setText(mAlbum.getTitle());
             mAlbumCover.setImageBitmap(bitmap);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent i = ImagesGridActivity.newIntent(getActivity(), mAlbum);
+            startActivity(i);
         }
     }
 

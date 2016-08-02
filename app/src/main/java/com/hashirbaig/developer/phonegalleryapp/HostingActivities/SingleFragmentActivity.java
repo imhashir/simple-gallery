@@ -19,6 +19,7 @@ public abstract class SingleFragmentActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fragment);
+        getSupportActionBar().setBackgroundDrawable(getResources().getDrawable(R.drawable.backrepeat));
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_container);
 

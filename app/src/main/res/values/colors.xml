@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#565656</color>
+    <color name="colorPrimaryDark">#363636</color>
     <color name="colorAccent">#FF4081</color>
 
     <!-- Loader Colors -->
@@ -10,6 +10,6 @@
     <color name="centerLoader">#b1b1b1</color>
 
     <!-- Album Thumb -->
-    <color name="album_name_back">#e99b9b9b</color>
+    <color name="album_name_back">#a5b7b7b7</color>
 
 </resources>

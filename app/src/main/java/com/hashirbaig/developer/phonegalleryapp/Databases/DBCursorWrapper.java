@@ -20,7 +20,7 @@ public class DBCursorWrapper extends CursorWrapper{
         Album album = new Album();
 
         String titleString = getString(getColumnIndex(AlbumTable.cols.TITLE));
-        String pathString = getString(getColumnIndex(AlbumTable.cols.LOCATION));
+        String pathString = getString(getColumnIndex(AlbumTable.cols.PATH));
         boolean hiddenBool = getString(getColumnIndex(AlbumTable.cols.HIDDEN)) == "1";
         String uuidString = getString(getColumnIndex(AlbumTable.cols.UUID));
 
@@ -35,7 +35,7 @@ public class DBCursorWrapper extends CursorWrapper{
         Photo photo = new Photo();
 
         String titleString = getString(getColumnIndex(PhotoData.cols.TITLE));
-        String pathString = getString(getColumnIndex(PhotoData.cols.LOCATION));
+        String pathString = getString(getColumnIndex(PhotoData.cols.PATH));
         String uuidString = getString(getColumnIndex(PhotoData.cols.ALBUM_ID));
 
         photo.setTitle(titleString);

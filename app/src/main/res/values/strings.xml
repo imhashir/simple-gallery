@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PhoneGalleryApp</string>
+    <string name="app_name">Gallery</string>
 
     <!-- Gallery List Fragment Strings -->
     <string name="refresh_data">Refresh!</string>

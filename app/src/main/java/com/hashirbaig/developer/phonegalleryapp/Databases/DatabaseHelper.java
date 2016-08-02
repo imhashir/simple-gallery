@@ -16,7 +16,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + GalleryDBSchema.AlbumTable.TABLE_NAME + "(" +
                 GalleryDBSchema.AlbumTable.cols.TITLE + "," +
-                GalleryDBSchema.AlbumTable.cols.LOCATION + ", "  +
+                GalleryDBSchema.AlbumTable.cols.PATH + ", "  +
                 GalleryDBSchema.AlbumTable.cols.HIDDEN + "," +
                 GalleryDBSchema.AlbumTable.cols.UUID +
                 ")"
@@ -24,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
         db.execSQL("CREATE TABLE " + GalleryDBSchema.PhotoData.TABLE_NAME + "(" +
                 GalleryDBSchema.PhotoData.cols.TITLE + "," +
-                GalleryDBSchema.PhotoData.cols.LOCATION + "," +
+                GalleryDBSchema.PhotoData.cols.PATH + "," +
                 GalleryDBSchema.PhotoData.cols.ALBUM_ID +
                 ")"
         );

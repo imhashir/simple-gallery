@@ -9,7 +9,7 @@ public class GalleryDBSchema {
         public static final String TABLE_NAME = "albums";
         public static class cols {
             public static final String TITLE = "title";
-            public static final String LOCATION = "location";
+            public static final String PATH = "path";
             public static final String HIDDEN = "hidden";
             public static final String UUID = "uuid";
 
@@ -20,7 +20,7 @@ public class GalleryDBSchema {
         public static final String TABLE_NAME = "photos";
         public static class cols {
             public static final String TITLE = "title";
-            public static final String LOCATION = "location";
+            public static final String PATH = "path";
             public static final String ALBUM_ID = "albumId";
 
         }
