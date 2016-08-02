@@ -24,14 +24,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.hashirbaig.developer.phonegalleryapp.Helper.PictureUtils;
+import com.bumptech.glide.Glide;
 import com.hashirbaig.developer.phonegalleryapp.HostingActivities.ImagesGridActivity;
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
 import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
 import com.hashirbaig.developer.phonegalleryapp.R;
-import com.hashirbaig.developer.phonegalleryapp.Threads.ThumbnailLoader;
-
 import java.util.List;
 
 public class AlbumsGridFragment extends Fragment{
@@ -40,7 +38,6 @@ public class AlbumsGridFragment extends Fragment{
 
     private RecyclerView mGridView;
     private AlbumAdapter mAdapter;
-    private ThumbnailLoader<AlbumHolder> mThumbnailLoader;
 
     public static AlbumsGridFragment newInstance() {
         return new AlbumsGridFragment();
@@ -52,25 +49,11 @@ public class AlbumsGridFragment extends Fragment{
         setHasOptionsMenu(true);
         getLocalStoragePermissions();
         AlbumData.get(getActivity());
-
-        Handler responseHandler = new Handler();
-        mThumbnailLoader = new ThumbnailLoader<>(responseHandler);
-
-        mThumbnailLoader.setThumbnailLoadedListener(new ThumbnailLoader.ThumbnailLoaderListener<AlbumHolder>() {
-            @Override
-            public void onThumbnailDownloaded(AlbumHolder target, Bitmap bitmap) {
-                target.finishView(bitmap);
-            }
-        });
-
-        mThumbnailLoader.start();
-        mThumbnailLoader.getLooper();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mThumbnailLoader.quit();
     }
 
     public void updateUI() {
@@ -108,13 +91,12 @@ public class AlbumsGridFragment extends Fragment{
         }
 
         public void bindHolder(Album album) {
-            mThumbnailLoader.queueThumbnail(this, album.getPhotos().get(0).getPath());
             mAlbum = album;
-        }
-
-        public void finishView(Bitmap bitmap) {
+            Photo photo = album.getPhotos().get(0);
+            Glide.with(getActivity())
+                    .load(photo.getPath())
+                    .into(mAlbumCover);
             mAlbumTitle.setText(mAlbum.getTitle());
-            mAlbumCover.setImageBitmap(bitmap);
         }
 
         @Override

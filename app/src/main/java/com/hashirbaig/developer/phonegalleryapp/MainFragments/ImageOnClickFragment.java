@@ -1,7 +1,7 @@
 package com.hashirbaig.developer.phonegalleryapp.MainFragments;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,18 +11,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.GlideBuilder;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.load.engine.Engine;
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.load.engine.cache.DiskCache;
+import com.bumptech.glide.load.engine.cache.MemoryCache;
+import com.bumptech.glide.module.GlideModule;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
 import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
 import com.hashirbaig.developer.phonegalleryapp.R;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.UUID;
+
+import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 
 public class ImageOnClickFragment extends Fragment{
 
     private static final String KEY_IMAGE_PATH = "image_path555";
     private static final String KEY_UUID_ALBUM = "uuid_key_36313";
 
-    private ImageView mImageView;
+    private ImageViewTouch mImageView;
     private Photo mPhoto;
 
     public static ImageOnClickFragment newInstance(String path, UUID uuid) {
@@ -44,17 +56,20 @@ public class ImageOnClickFragment extends Fragment{
         mPhoto = AlbumData.get(getActivity()).get(uuid).getPhoto(path);
     }
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.image_on_click_fragment,  container, false);
-        mImageView = (ImageView) v.findViewById(R.id.image_opened_view);
-        Bitmap bitmap = BitmapFactory.decodeFile(mPhoto.getPath());
-        mImageView.setImageBitmap(bitmap);
+        mImageView = (ImageViewTouch) v.findViewById(R.id.image_opened_view);
 
-        mImageView.setOnClickListener(new View.OnClickListener() {
+        Glide.with(getActivity())
+                .load(mPhoto.getPath())
+                .into(mImageView);
+
+        mImageView.setSingleTapListener(new ImageViewTouch.OnImageViewTouchSingleTapListener() {
             @Override
-            public void onClick(View v) {
+            public void onSingleTapConfirmed() {
                 AppCompatActivity activity = (AppCompatActivity) getActivity();
                 if(activity.getSupportActionBar().isShowing())
                     activity.getSupportActionBar().hide();
