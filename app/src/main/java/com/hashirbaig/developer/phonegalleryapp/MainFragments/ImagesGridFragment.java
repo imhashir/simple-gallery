@@ -1,6 +1,8 @@
 package com.hashirbaig.developer.phonegalleryapp.MainFragments;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.hashirbaig.developer.phonegalleryapp.HostingActivities.ImageOnClickActivity;
 import com.hashirbaig.developer.phonegalleryapp.HostingActivities.ImagesGridActivity;
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
@@ -47,7 +50,7 @@ public class ImagesGridFragment extends Fragment{
         mThumbnailLoader.setThumbnailLoadedListener(new ThumbnailLoader.ThumbnailLoaderListener<ImageHolder>() {
             @Override
             public void onThumbnailDownloaded(ImageHolder target, Bitmap bitmap) {
-                target.bindThumbnail(bitmap);
+                target.finishThumbnail(bitmap);
             }
         });
 
@@ -82,18 +85,33 @@ public class ImagesGridFragment extends Fragment{
         }
     }
 
-    private class ImageHolder extends RecyclerView.ViewHolder{
+    private class ImageHolder extends RecyclerView.ViewHolder
+                                        implements View.OnClickListener{
 
         private ImageView mImageView;
+        private Photo photo;
+
         public ImageHolder(View v) {
             super(v);
             mImageView = (ImageView) v.findViewById(R.id.image_thumb_container);
+            v.setOnClickListener(this);
         }
 
-        private void bindThumbnail(Bitmap bitmap) {
+        private void bindThumbnail(Photo p) {
+            photo = p;
+            mImageView.setImageDrawable(new ColorDrawable(getResources().getColor(android.R.color.white)));
+            mThumbnailLoader.queueThumbnail(this, photo.getPath());
+        }
+
+        private void finishThumbnail(Bitmap bitmap) {
             mImageView.setImageBitmap(bitmap);
         }
 
+        @Override
+        public void onClick(View v) {
+            Intent i = ImageOnClickActivity.newIntent(getActivity(), photo.getPath(), photo.getAlbumId());
+            startActivity(i);
+        }
     }
 
     private class ImageAdapter extends RecyclerView.Adapter<ImageHolder> {
@@ -113,8 +131,7 @@ public class ImagesGridFragment extends Fragment{
 
         @Override
         public void onBindViewHolder(ImageHolder holder, int position) {
-            String path = mPhotosList.get(position).getPath();
-            mThumbnailLoader.queueThumbnail(holder, path);
+            holder.bindThumbnail(mPhotosList.get(position));
         }
 
         @Override

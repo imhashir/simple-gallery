@@ -1,5 +1,8 @@
 package com.hashirbaig.developer.phonegalleryapp.Model;
 
+import android.content.pm.PackageManager;
+import android.graphics.Path;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +23,14 @@ public class Album {
         mTitle = title;
         mHidden = mTitle.startsWith(".");
         mUUID = UUID.randomUUID();
+    }
+
+    public Photo getPhoto(String path) {
+        for(Photo photo : mPhotos) {
+            if(photo.getPath().equals(path))
+                return photo;
+        }
+        return null;
     }
 
     public String getTitle() {
