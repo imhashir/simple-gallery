@@ -142,6 +142,8 @@ public class AlbumsGridFragment extends Fragment{
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
+            AlbumData.get(getActivity()).queryDatabase();
+            mAdapter = null;
             updateUI();
         }
     }

@@ -3,7 +3,9 @@ package com.hashirbaig.developer.phonegalleryapp.Model;
 import android.content.pm.PackageManager;
 import android.graphics.Path;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ public class Album {
     private List<Photo> mPhotos = new ArrayList<>();
     private boolean mHidden;
     private UUID mUUID;
+    private Date mDate;
 
     public Album() {
         mUUID = UUID.randomUUID();
@@ -47,6 +50,7 @@ public class Album {
 
     public void setPath(String path) {
         mPath = path;
+        mDate = new Date(new File(path).lastModified() * 1000);
     }
 
     public void add(Photo photo) {
@@ -75,5 +79,13 @@ public class Album {
 
     public void setUUID(UUID UUID) {
         mUUID = UUID;
+    }
+
+    public Date getDate() {
+        return mDate;
+    }
+
+    public void setDate(Date date) {
+        mDate = date;
     }
 }

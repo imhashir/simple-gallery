@@ -9,12 +9,13 @@ import android.util.Log;
 
 import com.hashirbaig.developer.phonegalleryapp.Databases.DBCursorWrapper;
 import com.hashirbaig.developer.phonegalleryapp.Databases.DatabaseHelper;
-import com.hashirbaig.developer.phonegalleryapp.Databases.GalleryDBSchema;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static com.hashirbaig.developer.phonegalleryapp.Databases.GalleryDBSchema.*;
 
 public class AlbumData {
 
@@ -28,7 +29,7 @@ public class AlbumData {
     private AlbumData(Context context) {
         mContext = context;
         mAlbumList = new ArrayList<>();
-        mDatabase = new DatabaseHelper(context).getWritableDatabase();
+        mDatabase = new DatabaseHelper(mContext).getWritableDatabase();
         queryDatabase();
     }
 
@@ -50,14 +51,15 @@ public class AlbumData {
     public void queryDatabase() {
 
         Cursor albumCursor = mDatabase.query(
-                GalleryDBSchema.AlbumTable.TABLE_NAME,
+                AlbumTable.TABLE_NAME,
                 null,
                 null,
                 null,
                 null,
                 null,
-                null
+                AlbumTable.cols.DATE + " DESC"
         );
+
         DBCursorWrapper albumWrapper = new DBCursorWrapper(albumCursor);
         albumWrapper.moveToFirst();
         if(albumWrapper.getCount() > 0) {
@@ -67,13 +69,13 @@ public class AlbumData {
                     mAlbumList.add(album);
 
                     Cursor photoCursor = mDatabase.query(
-                            GalleryDBSchema.PhotoData.TABLE_NAME,
+                            PhotoTable.TABLE_NAME,
                             null,
-                            GalleryDBSchema.PhotoData.cols.ALBUM_ID + " = ?",
+                            PhotoTable.cols.ALBUM_ID + " = ?",
                             new String[]{album.getUUID().toString()},
                             null,
                             null,
-                            null
+                            PhotoTable.cols.DATE + " DESC"
                     );
 
                     DBCursorWrapper photoWrapper = new DBCursorWrapper(photoCursor);
@@ -108,28 +110,30 @@ public class AlbumData {
     }
 
     public void addAlbum(Album album) {
-        mDatabase.insert(GalleryDBSchema.AlbumTable.TABLE_NAME, null, getAlbumCV(album));
+        mDatabase.insert(AlbumTable.TABLE_NAME, null, getAlbumCV(album));
     }
 
     public void addPhoto(Photo photo) {
-        mDatabase.insert(GalleryDBSchema.PhotoData.TABLE_NAME, null, getPhotoCV(photo));
+        mDatabase.insert(PhotoTable.TABLE_NAME, null, getPhotoCV(photo));
     }
 
     private ContentValues getPhotoCV(Photo photo) {
         ContentValues values = new ContentValues();
-        values.put(GalleryDBSchema.PhotoData.cols.TITLE, photo.getTitle());
-        values.put(GalleryDBSchema.PhotoData.cols.PATH, photo.getPath());
-        values.put(GalleryDBSchema.PhotoData.cols.ALBUM_ID, photo.getAlbumId().toString());
+        values.put(PhotoTable.cols.TITLE, photo.getTitle());
+        values.put(PhotoTable.cols.PATH, photo.getPath());
+        values.put(PhotoTable.cols.ALBUM_ID, photo.getAlbumId().toString());
+        values.put(PhotoTable.cols.DATE, photo.getDate().getTime());
 
         return values;
     }
 
     private ContentValues getAlbumCV(Album album) {
         ContentValues values = new ContentValues();
-        values.put(GalleryDBSchema.AlbumTable.cols.TITLE, album.getTitle());
-        values.put(GalleryDBSchema.AlbumTable.cols.PATH, album.getPath());
-        values.put(GalleryDBSchema.AlbumTable.cols.HIDDEN, album.isHidden());
-        values.put(GalleryDBSchema.AlbumTable.cols.UUID, album.getUUID().toString());
+        values.put(AlbumTable.cols.TITLE, album.getTitle());
+        values.put(AlbumTable.cols.PATH, album.getPath());
+        values.put(AlbumTable.cols.HIDDEN, album.isHidden());
+        values.put(AlbumTable.cols.UUID, album.getUUID().toString());
+        values.put(AlbumTable.cols.DATE, album.getDate().getTime());
 
         return values;
     }
@@ -140,9 +144,10 @@ public class AlbumData {
         album.setPath(file.getPath());
         album.setUUID(uuid);
         for (File f : file.listFiles()) {
+            String fullPath = f.toURI().toString();
             if(f.isDirectory()) {
                 searchDirectory(f);
-            } else if(f.toURI().toString().endsWith(".jpg")){
+            } else if(fullPath.endsWith(".jpg") || fullPath.endsWith(".png") || fullPath.endsWith(".gif")){
                 Photo photo = new Photo(f.getPath().substring(f.getPath().lastIndexOf("/") + 1), f.getPath());
                 photo.setAlbumId(uuid);
                 album.add(photo);
@@ -151,7 +156,6 @@ public class AlbumData {
             }
         }
         if(album.getPhotos().size() > 0) {
-            mAlbumList.add(album);
             addAlbum(album);
         }
     }

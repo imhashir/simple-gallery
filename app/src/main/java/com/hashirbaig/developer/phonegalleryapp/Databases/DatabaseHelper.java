@@ -18,14 +18,16 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 GalleryDBSchema.AlbumTable.cols.TITLE + "," +
                 GalleryDBSchema.AlbumTable.cols.PATH + ", "  +
                 GalleryDBSchema.AlbumTable.cols.HIDDEN + "," +
-                GalleryDBSchema.AlbumTable.cols.UUID +
+                GalleryDBSchema.AlbumTable.cols.UUID + ", " +
+                GalleryDBSchema.AlbumTable.cols.DATE +
                 ")"
         );
 
-        db.execSQL("CREATE TABLE " + GalleryDBSchema.PhotoData.TABLE_NAME + "(" +
-                GalleryDBSchema.PhotoData.cols.TITLE + "," +
-                GalleryDBSchema.PhotoData.cols.PATH + "," +
-                GalleryDBSchema.PhotoData.cols.ALBUM_ID +
+        db.execSQL("CREATE TABLE " + GalleryDBSchema.PhotoTable.TABLE_NAME + "(" +
+                GalleryDBSchema.PhotoTable.cols.TITLE + "," +
+                GalleryDBSchema.PhotoTable.cols.PATH + "," +
+                GalleryDBSchema.PhotoTable.cols.ALBUM_ID + ", " +
+                GalleryDBSchema.PhotoTable.cols.DATE +
                 ")"
         );
     }

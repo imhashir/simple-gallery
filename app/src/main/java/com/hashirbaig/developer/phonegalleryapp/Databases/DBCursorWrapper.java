@@ -34,9 +34,9 @@ public class DBCursorWrapper extends CursorWrapper{
     public Photo getPhoto() {
         Photo photo = new Photo();
 
-        String titleString = getString(getColumnIndex(PhotoData.cols.TITLE));
-        String pathString = getString(getColumnIndex(PhotoData.cols.PATH));
-        String uuidString = getString(getColumnIndex(PhotoData.cols.ALBUM_ID));
+        String titleString = getString(getColumnIndex(PhotoTable.cols.TITLE));
+        String pathString = getString(getColumnIndex(PhotoTable.cols.PATH));
+        String uuidString = getString(getColumnIndex(PhotoTable.cols.ALBUM_ID));
 
         photo.setTitle(titleString);
         photo.setPath(pathString);
