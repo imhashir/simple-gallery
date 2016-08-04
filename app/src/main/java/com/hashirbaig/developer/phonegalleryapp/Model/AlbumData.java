@@ -50,6 +50,7 @@ public class AlbumData {
 
     public void queryDatabase() {
 
+        List<Album> newList = new ArrayList<>();
         Cursor albumCursor = mDatabase.query(
                 AlbumTable.TABLE_NAME,
                 null,
@@ -66,38 +67,15 @@ public class AlbumData {
             try {
                 while (!albumCursor.isAfterLast()) {
                     Album album = albumWrapper.getAlbum();
-                    mAlbumList.add(album);
-
-                    Cursor photoCursor = mDatabase.query(
-                            PhotoTable.TABLE_NAME,
-                            null,
-                            PhotoTable.cols.ALBUM_ID + " = ?",
-                            new String[]{album.getUUID().toString()},
-                            null,
-                            null,
-                            PhotoTable.cols.DATE + " DESC"
-                    );
-
-                    DBCursorWrapper photoWrapper = new DBCursorWrapper(photoCursor);
-                    photoWrapper.moveToFirst();
-                    if(photoWrapper.getCount() > 0) {
-                        try {
-                            while (!photoWrapper.isAfterLast()) {
-                                album.add(photoWrapper.getPhoto());
-                                photoWrapper.moveToNext();
-                            }
-                        } finally {
-                            photoWrapper.close();
-                        }
-                    }
+                    newList.add(album);
                     albumWrapper.moveToNext();
 
                 }
             } finally {
                 albumWrapper.close();
             }
-
         }
+        mAlbumList = newList;
     }
 
     public void queryAlbums() {
@@ -143,20 +121,35 @@ public class AlbumData {
         Album album = new Album(file.getPath().substring(file.getPath().lastIndexOf("/") + 1));
         album.setPath(file.getPath());
         album.setUUID(uuid);
+        boolean isMedia = false;
         for (File f : file.listFiles()) {
             String fullPath = f.toURI().toString();
+            String temp = fullPath.substring(0, fullPath.length() - 1);
+            String name = temp.substring(temp.lastIndexOf("/") + 1);
             if(f.isDirectory()) {
-                searchDirectory(f);
+                if(name.equals("Android") || has(f.getPath())) {
+                    continue;
+                } else {
+                    searchDirectory(f);
+                }
             } else if(fullPath.endsWith(".jpg") || fullPath.endsWith(".png") || fullPath.endsWith(".gif")){
-                Photo photo = new Photo(f.getPath().substring(f.getPath().lastIndexOf("/") + 1), f.getPath());
-                photo.setAlbumId(uuid);
-                album.add(photo);
-                addPhoto(photo);
-                Log.i(TAG, album.getTitle() + " --- " + photo.getTitle());
+                isMedia = true;
+                Log.i(TAG, album.getTitle());
+                break;
             }
         }
-        if(album.getPhotos().size() > 0) {
+        if(isMedia) {
             addAlbum(album);
         }
+    }
+
+    public boolean has(String a) {
+        for(Album album : mAlbumList) {
+            String data = album.getPath();
+            String newData = a;
+            if(data.equals(newData))
+                return true;
+        }
+        return false;
     }
 }

@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -44,11 +46,29 @@ public class AlbumsGridFragment extends Fragment{
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_STORAGE_PERMISSION:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    AlbumData.get(getActivity()).queryDatabase();
+                    new FetchImagesInStorage().execute();
+                }
+                break;
+        }
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getLocalStoragePermissions();
-        AlbumData.get(getActivity());
+        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            requestPermissions(
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                            REQUEST_STORAGE_PERMISSION);
+        } else {
+            new QueryDatabase().execute();
+            new FetchImagesInStorage().execute();
+        }
     }
 
     @Override
@@ -72,7 +92,6 @@ public class AlbumsGridFragment extends Fragment{
         mGridView = (RecyclerView) v.findViewById(R.id.grid_view);
         mGridView.setLayoutManager(new GridLayoutManager(getActivity(), getResources().getInteger(R.integer.no_of_cols)));
         updateUI();
-
         return v;
     }
 
@@ -92,10 +111,12 @@ public class AlbumsGridFragment extends Fragment{
 
         public void bindHolder(Album album) {
             mAlbum = album;
+            /*
             Photo photo = album.getPhotos().get(0);
             Glide.with(getActivity())
-                    .load(photo.getPath())
+                    .load(new ColorDrawable(getResources().getColor(android.R.color.white)))
                     .into(mAlbumCover);
+            */
             mAlbumTitle.setText(mAlbum.getTitle());
         }
 
@@ -131,6 +152,21 @@ public class AlbumsGridFragment extends Fragment{
         }
     }
 
+    private class QueryDatabase extends AsyncTask<Void,Void,Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            AlbumData.get(getActivity()).queryDatabase();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            updateUI();
+        }
+    }
+
     private class FetchImagesInStorage extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -142,8 +178,7 @@ public class AlbumsGridFragment extends Fragment{
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            AlbumData.get(getActivity()).queryDatabase();
-            mAdapter = null;
+            new QueryDatabase().execute();
             updateUI();
         }
     }
@@ -152,16 +187,6 @@ public class AlbumsGridFragment extends Fragment{
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.gallery_grid_menu, menu);
-    }
-
-    private void getLocalStoragePermissions() {
-        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat
-                    .requestPermissions(
-                            getActivity(),
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
-                            REQUEST_STORAGE_PERMISSION);
-        }
     }
 
     @Override
