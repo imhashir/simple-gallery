@@ -3,18 +3,12 @@ package com.hashirbaig.developer.phonegalleryapp.MainFragments;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.LruCache;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -30,7 +24,6 @@ import com.bumptech.glide.Glide;
 import com.hashirbaig.developer.phonegalleryapp.HostingActivities.ImagesGridActivity;
 import com.hashirbaig.developer.phonegalleryapp.Model.Album;
 import com.hashirbaig.developer.phonegalleryapp.Model.AlbumData;
-import com.hashirbaig.developer.phonegalleryapp.Model.Photo;
 import com.hashirbaig.developer.phonegalleryapp.R;
 import java.util.List;
 
@@ -50,8 +43,8 @@ public class AlbumsGridFragment extends Fragment{
         switch (requestCode) {
             case REQUEST_STORAGE_PERMISSION:
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AlbumData.get(getActivity()).queryDatabase();
-                    new FetchImagesInStorage().execute();
+                    AlbumData.get(getActivity()).queryAlbumDatabase();
+                    new FetchAlbumsInStorage().execute();
                 }
                 break;
         }
@@ -66,8 +59,8 @@ public class AlbumsGridFragment extends Fragment{
                             new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                             REQUEST_STORAGE_PERMISSION);
         } else {
-            new QueryDatabase().execute();
-            new FetchImagesInStorage().execute();
+            new QueryAlbumsDatabase().execute();
+            new FetchAlbumsInStorage().execute();
         }
     }
 
@@ -111,6 +104,8 @@ public class AlbumsGridFragment extends Fragment{
 
         public void bindHolder(Album album) {
             mAlbum = album;
+            new QueryPhotosDatabase().execute(album, this);
+            new FetchPhotosInStorage().execute(album);
             /*
             Photo photo = album.getPhotos().get(0);
             Glide.with(getActivity())
@@ -124,6 +119,10 @@ public class AlbumsGridFragment extends Fragment{
         public void onClick(View v) {
             Intent i = ImagesGridActivity.newIntent(getActivity(), mAlbum);
             startActivity(i);
+        }
+
+        public ImageView getAlbumCover() {
+            return mAlbumCover;
         }
     }
 
@@ -152,11 +151,11 @@ public class AlbumsGridFragment extends Fragment{
         }
     }
 
-    private class QueryDatabase extends AsyncTask<Void,Void,Void> {
+    private class QueryAlbumsDatabase extends AsyncTask<Void,Void,Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
-            AlbumData.get(getActivity()).queryDatabase();
+            AlbumData.get(getActivity()).queryAlbumDatabase();
             return null;
         }
 
@@ -167,7 +166,7 @@ public class AlbumsGridFragment extends Fragment{
         }
     }
 
-    private class FetchImagesInStorage extends AsyncTask<Void, Void, Void> {
+    private class FetchAlbumsInStorage extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -178,8 +177,45 @@ public class AlbumsGridFragment extends Fragment{
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            new QueryDatabase().execute();
+            new QueryAlbumsDatabase().execute();
             updateUI();
+        }
+    }
+
+    private class QueryPhotosDatabase extends AsyncTask<Object,Void,Void> {
+
+        private AlbumHolder holder;
+        private Album mAlbum;
+        @Override
+        protected Void doInBackground(Object... params) {
+            mAlbum = (Album) params[0];
+            holder = (AlbumHolder) params[1];
+            AlbumData.get(getActivity()).queryPhotoDatabase(mAlbum);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            updateUI();
+
+        }
+    }
+
+    private class FetchPhotosInStorage extends AsyncTask<Album, Void, Void> {
+
+        private Album mAlbum;
+        @Override
+        protected Void doInBackground(Album... alba) {
+            mAlbum = alba[0];
+            AlbumData.get(getActivity()).pathLookUp(mAlbum);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            new QueryPhotosDatabase().execute(mAlbum);
         }
     }
 
@@ -193,7 +229,7 @@ public class AlbumsGridFragment extends Fragment{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.refresh_data_option:
-                new FetchImagesInStorage().execute();
+                new FetchAlbumsInStorage().execute();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

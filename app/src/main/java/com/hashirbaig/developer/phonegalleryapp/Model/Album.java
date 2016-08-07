@@ -1,8 +1,5 @@
 package com.hashirbaig.developer.phonegalleryapp.Model;
 
-import android.content.pm.PackageManager;
-import android.graphics.Path;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,5 +84,13 @@ public class Album {
 
     public void setDate(Date date) {
         mDate = date;
+    }
+
+    public boolean has(String a) {
+        for(Photo photo : mPhotos) {
+            if(photo.getPath().equals(a))
+                return true;
+        }
+        return false;
     }
 }

@@ -15,9 +15,9 @@ public class Photo {
         mDate = new Date();
     }
 
-    public Photo(String title, String path) {
+    public Photo(String path) {
         mDate = new Date(new File(path).lastModified() * 1000);
-        mTitle = title;
+        mTitle = path.substring(path.lastIndexOf("/") + 1);
         mPath = path;
     }
 

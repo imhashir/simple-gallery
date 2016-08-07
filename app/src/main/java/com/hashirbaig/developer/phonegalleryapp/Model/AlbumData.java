@@ -30,7 +30,7 @@ public class AlbumData {
         mContext = context;
         mAlbumList = new ArrayList<>();
         mDatabase = new DatabaseHelper(mContext).getWritableDatabase();
-        queryDatabase();
+        queryAlbumDatabase();
     }
 
     public static AlbumData get(Context context) {
@@ -48,7 +48,7 @@ public class AlbumData {
         return null;
     }
 
-    public void queryDatabase() {
+    public void queryAlbumDatabase() {
 
         List<Album> newList = new ArrayList<>();
         Cursor albumCursor = mDatabase.query(
@@ -76,6 +76,36 @@ public class AlbumData {
             }
         }
         mAlbumList = newList;
+    }
+
+    public void queryPhotoDatabase(Album album) {
+
+        List<Photo> newList = new ArrayList<>();
+        Cursor photoCursor = mDatabase.query(
+                PhotoTable.TABLE_NAME,
+                null,
+                PhotoTable.cols.ALBUM_ID + " = ?",
+                new String[]{album.getUUID().toString()},
+                null,
+                null,
+                PhotoTable.cols.DATE + " DESC"
+        );
+
+        DBCursorWrapper photoWrapper = new DBCursorWrapper(photoCursor);
+        photoWrapper.moveToFirst();
+        if(photoWrapper.getCount() > 0) {
+            try {
+                while (!photoWrapper.isAfterLast()) {
+                    Photo photo = photoWrapper.getPhoto();
+                    newList.add(photo);
+                    photoWrapper.moveToNext();
+
+                }
+            } finally {
+                photoWrapper.close();
+            }
+        }
+        album.setPhotos(newList);
     }
 
     public void queryAlbums() {
@@ -145,11 +175,28 @@ public class AlbumData {
 
     public boolean has(String a) {
         for(Album album : mAlbumList) {
-            String data = album.getPath();
-            String newData = a;
-            if(data.equals(newData))
+            if(album.getPath().equals(a))
                 return true;
         }
         return false;
     }
+
+    public void pathLookUp(Album album) {
+        File directory = new File(album.getPath());
+        if (directory.listFiles().length > 0) {
+            for (File file : directory.listFiles()) {
+                String p = file.toURI().toString();
+                if(!album.has(file.getPath())) {
+                    if (p.endsWith(".jpg") || p.endsWith(".png") || p.endsWith(".gif")) {
+                        Photo photo = new Photo(file.getPath());
+                        photo.setAlbumId(album.getUUID());
+                        Log.i(TAG, file.getPath());
+                        addPhoto(photo);
+                    }
+                }
+            }
+        }
+    }
+
+
 }
